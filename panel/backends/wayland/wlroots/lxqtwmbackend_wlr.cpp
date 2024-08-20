@@ -290,7 +290,7 @@ bool LXQtTaskbarWlrootsBackend::isWindowOnScreen(QScreen *, WId) const
     return true;
 }
 
-bool setDesktopLayout(Qt::Orientation, int, int, bool) {
+bool LXQtTaskbarWlrootsBackend::setDesktopLayout(Qt::Orientation, int, int, bool) {
     // Wlroots has no support for workspace as of 2024-August-20
     return false;
 }
