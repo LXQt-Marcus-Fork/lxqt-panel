@@ -44,7 +44,7 @@
 
 #include "backends/lxqtdummywmbackend.h"
 
-QMap<QString, int> getBackendScoreMap( QString compositor )
+static inline QMap<QString, int> getBackendScoreMap( QString compositor )
 {
     QStringList dirs;
     dirs << QProcessEnvironment::systemEnvironment().value(QStringLiteral("LXQTPANEL_PLUGIN_PATH")).split(QStringLiteral(":"));
@@ -85,7 +85,7 @@ QMap<QString, int> getBackendScoreMap( QString compositor )
     return backendScoreMap;
 }
 
-QString getBackendFilePath( QString name )
+static inline QString getBackendFilePath( QString name )
 {
     if ( !name.startsWith( QStringLiteral("libwmbackend_") ) )
     {
@@ -116,6 +116,35 @@ QString getBackendFilePath( QString name )
     }
 
     return QString();
+}
+
+static inline bool testBackend( QString backendName )
+{
+    QString backendPath = getBackendFilePath( backendName );
+
+    QPluginLoader loader(backendPath);
+    if(!loader.load())
+    {
+        qWarning() << "Backend error:" << loader.errorString();
+        return false;
+    }
+
+    QObject *plugin = loader.instance();
+    if(!plugin) {
+        qWarning() << "Failed to create the plugin instance";
+        return false;
+    }
+
+    ILXQtWMBackendLibrary *backend = qobject_cast<ILXQtWMBackendLibrary *>(plugin);
+    bool okay = false;
+    if(backend)
+    {
+        okay = true;
+    }
+
+    loader.unload();
+
+    return okay;
 }
 
 LXQtPanelApplicationPrivate::LXQtPanelApplicationPrivate(LXQtPanelApplication *q)
@@ -181,8 +210,9 @@ void LXQtPanelApplicationPrivate::loadBackend()
     QString preferredBackend;
 
     for( QString backend: preferredBackends ) {
-        if ( backend.startsWith( xdgCurrentDesktops[ 1 ] ) ) {
-            preferredBackend = backend;
+        QStringList parts = backend.split(QStringLiteral(":"));
+        if (( parts[0] == xdgCurrentDesktops[ 1 ] ) && testBackend(parts[1])) {
+            preferredBackend = parts[1];
             break;
         }
     }
@@ -204,6 +234,9 @@ void LXQtPanelApplicationPrivate::loadBackend()
             for( QString backend: backendScoreMap.keys() ) {
                 if ( backendScoreMap[ backend ] > bestScore ) {
                     bestScore = backendScoreMap[ backend ];
+                    // No need to call testBackend().
+                    // We can be sure the plugin can be loaded.
+                    // Because we have a score.
                     preferredBackend = backend;
                 }
             }
