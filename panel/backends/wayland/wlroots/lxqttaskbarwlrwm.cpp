@@ -1,4 +1,4 @@
-#include "lxqttaskbarwlrwindowmanagment.h"
+#include "lxqttaskbarwlrwm.h"
 
 #include <QString>
 #include <QFuture>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../ilxqttaskbarabstractbackend.h"
+#include "../../ilxqtabstractwmiface.h"
 
 #include <QTime>
 #include <QHash>
@@ -11,7 +11,7 @@ class LXQtTaskbarWlrootsWindowManagment;
 class LXQtWlrootsWaylandWorkspaceInfo;
 
 
-class LXQtTaskbarWlrootsBackend : public ILXQtTaskbarAbstractBackend
+class LXQtTaskbarWlrootsBackend : public ILXQtAbstractWMInterface
 {
     Q_OBJECT
 
@@ -57,6 +57,8 @@ public:
 
     virtual bool isWindowOnScreen(QScreen *screen, WId windowId) const override;
 
+    virtual bool setDesktopLayout(Qt::Orientation orientation, int rows, int columns, bool rightToLeft);
+
     // X11 Specific
     virtual void moveApplication(WId windowId) override;
     virtual void resizeApplication(WId windowId) override;
@@ -78,8 +80,6 @@ private:
     /** Convert WId (i.e. quintptr into LXQtTaskbarWlrootsWindow*) */
     LXQtTaskbarWlrootsWindow *getWindow(WId windowId) const;
 
-    std::unique_ptr<LXQtWlrootsWaylandWorkspaceInfo> m_workspaceInfo;
-
     std::unique_ptr<LXQtTaskbarWlrootsWindowManagment> m_managment;
 
     QHash<WId, QTime> lastActivated;
@@ -88,4 +88,16 @@ private:
 
     // key=transient child, value=leader
     QHash<WId, WId> transients;
+};
+
+
+class LXQtWMBackendWlrootsLibrary: public QObject, public ILXQtWMBackendLibrary
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "lxqt.org/Panel/WMInterface/1.0")
+    Q_INTERFACES(ILXQtWMBackendLibrary)
+public:
+    int getBackendScore() const override;
+
+    ILXQtAbstractWMInterface* instance() const override;
 };

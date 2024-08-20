@@ -1,7 +1,5 @@
-#include "lxqttaskbarbackendwlr.h"
-
-#include "lxqttaskbarwlrwindowmanagment.h"
-#include "lxqtwlrvirtualdesktop.h"
+#include "lxqttaskbarwlrwm.h"
+#include "lxqtwmbackend_wlr.h"
 
 #include <QIcon>
 #include <QTime>
@@ -35,10 +33,9 @@ void eraseWindow(std::vector<WId>& windows, WId tgt) {
 }
 
 LXQtTaskbarWlrootsBackend::LXQtTaskbarWlrootsBackend(QObject *parent) :
-    ILXQtTaskbarAbstractBackend(parent)
+    ILXQtAbstractWMInterface(parent)
 {
     m_managment.reset(new LXQtTaskbarWlrootsWindowManagment);
-    m_workspaceInfo.reset(new LXQtWlrootsWaylandWorkspaceInfo);
 
     connect(m_managment.get(), &LXQtTaskbarWlrootsWindowManagment::windowCreated, this, &LXQtTaskbarWlrootsBackend::addWindow);
 }
@@ -255,12 +252,12 @@ WId LXQtTaskbarWlrootsBackend::getActiveWindow() const
 
 int LXQtTaskbarWlrootsBackend::getWorkspacesCount() const
 {
-    return m_workspaceInfo->numberOfDesktops();
+    return 1;
 }
 
-QString LXQtTaskbarWlrootsBackend::getWorkspaceName(int idx) const
+QString LXQtTaskbarWlrootsBackend::getWorkspaceName(int) const
 {
-    return m_workspaceInfo->getDesktopName(idx - 1); //Return to 0-based
+    return QStringLiteral("Desktop 1");
 }
 
 int LXQtTaskbarWlrootsBackend::getCurrentWorkspace() const
@@ -280,7 +277,7 @@ int LXQtTaskbarWlrootsBackend::getWindowWorkspace(WId) const
 
 bool LXQtTaskbarWlrootsBackend::setWindowOnWorkspace(WId, int)
 {
-    return false;
+    return true;
 }
 
 void LXQtTaskbarWlrootsBackend::moveApplicationToPrevNextMonitor(WId, bool, bool)
@@ -291,6 +288,11 @@ bool LXQtTaskbarWlrootsBackend::isWindowOnScreen(QScreen *, WId) const
 {
     // TODO: Manage based on output-enter/output-leave
     return true;
+}
+
+bool setDesktopLayout(Qt::Orientation, int, int, bool) {
+    // Wlroots has no support for workspace as of 2024-August-20
+    return false;
 }
 
 void LXQtTaskbarWlrootsBackend::moveApplication(WId)
@@ -468,4 +470,26 @@ LXQtTaskbarWlrootsWindow *LXQtTaskbarWlrootsBackend::getWindow(WId windowId) con
     }
 
     return nullptr;
+}
+
+
+int LXQtWMBackendWlrootsLibrary::getBackendScore() const
+{
+    auto *waylandApplication = qGuiApp->nativeInterface<QNativeInterface::QWaylandApplication>();
+    if(!waylandApplication)
+        return 0;
+
+    // Detect Wlroots based setup. As long as wlroots is supported, we're good to go.
+    // We will not score it high - Dedicated plugins will always be better.
+    QString xdgCurrentDesktop = qEnvironmentVariable("XDG_CURRENT_DESKTOP");
+    if(xdgCurrentDesktop.contains(QStringLiteral("wlroots")))
+        return 50;
+
+    // Unsupported
+    return 0;
+}
+
+ILXQtAbstractWMInterface *LXQtWMBackendWlrootsLibrary::instance() const
+{
+    return new LXQtTaskbarWlrootsBackend(nullptr);
 }
