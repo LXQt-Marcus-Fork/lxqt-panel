@@ -1,4 +1,4 @@
-set(NAME kwin_wayland_backend)
+set(NAME wmbackend_kwin_wayland)
 set(PROGRAM "lxqt-panel")
 set(BACKEND "backend")
 project(${PROGRAM}_${BACKEND}_${NAME})

@@ -1,4 +1,4 @@
-set(NAME xcb_backend)
+set(NAME wmbackend_xcb)
 set(PROGRAM "lxqt-panel")
 set(BACKEND "backend")
 project(${PROGRAM}_${BACKEND}_${NAME})
