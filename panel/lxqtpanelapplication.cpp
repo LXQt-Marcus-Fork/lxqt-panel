@@ -87,13 +87,18 @@ static inline QMap<QString, int> getBackendScoreMap( QString compositor )
 
 static inline QString getBackendFilePath( QString name )
 {
-    if ( !name.startsWith( QStringLiteral("libwmbackend_") ) )
+    // If we do not have a full library name, line lib_labwc_backend.so,
+    // then build a name based on default heuristic: libwmbackend_<name>.so
+    if (!name.startsWith(QStringLiteral("lib")) || !name.endsWith(".so"))
     {
-        name = QString( QStringLiteral("libwmbackend_%1") ).arg( name );
-    }
-    if ( !name.endsWith( QStringLiteral(".so") ) )
-    {
-        name = QString( QStringLiteral("%1.so") ).arg( name );
+        if ( !name.startsWith( QStringLiteral("libwmbackend_") ) )
+        {
+            name = QString( QStringLiteral("libwmbackend_%1") ).arg( name );
+        }
+        if ( !name.endsWith( QStringLiteral(".so") ) )
+        {
+            name = QString( QStringLiteral("%1.so") ).arg( name );
+        }
     }
 
     QStringList dirs;
