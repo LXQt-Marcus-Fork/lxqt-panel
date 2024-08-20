@@ -89,7 +89,7 @@ static inline QString getBackendFilePath( QString name )
 {
     // If we do not have a full library name, line lib_labwc_backend.so,
     // then build a name based on default heuristic: libwmbackend_<name>.so
-    if (!name.startsWith(QStringLiteral("lib")) || !name.endsWith(".so"))
+    if (!name.startsWith(QStringLiteral("lib")) || !name.endsWith(QStringLiteral(".so")))
     {
         if ( !name.startsWith( QStringLiteral("libwmbackend_") ) )
         {
