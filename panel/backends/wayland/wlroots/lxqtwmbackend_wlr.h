@@ -97,7 +97,7 @@ class LXQtWMBackendWlrootsLibrary: public QObject, public ILXQtWMBackendLibrary
     Q_PLUGIN_METADATA(IID "lxqt.org/Panel/WMInterface/1.0")
     Q_INTERFACES(ILXQtWMBackendLibrary)
 public:
-    int getBackendScore() const override;
+    int getBackendScore( QString key = QString() ) const override;
 
     ILXQtAbstractWMInterface* instance() const override;
 };

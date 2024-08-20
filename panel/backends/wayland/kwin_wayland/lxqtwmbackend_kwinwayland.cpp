@@ -760,43 +760,12 @@ LXQtTaskBarPlasmaWindow *LXQtWMBackend_KWinWayland::getWindow(WId windowId) cons
     return nullptr;
 }
 
-static inline QByteArray detectDesktopEnvironment()
+int LXQtWMBackendKWinWaylandLibrary::getBackendScore( QString key ) const
 {
-    const QByteArray xdgCurrentDesktop = qgetenv("XDG_CURRENT_DESKTOP");
-    if (!xdgCurrentDesktop.isEmpty())
-        return xdgCurrentDesktop.toUpper(); // KDE, GNOME, UNITY, LXDE, MATE, XFCE...
-
-    // Classic fallbacks
-    if (!qEnvironmentVariableIsEmpty("KDE_FULL_SESSION"))
-        return QByteArrayLiteral("KDE");
-
-    // Fallback to checking $DESKTOP_SESSION (unreliable)
-    QByteArray desktopSession = qgetenv("DESKTOP_SESSION");
-
-    // This can be a path in /usr/share/xsessions
-    int slash = desktopSession.lastIndexOf('/');
-    // try decoding just the basename
-    desktopSession = desktopSession.mid(slash + 1);
-
-    if (desktopSession == "kde" || desktopSession == "plasma")
-        return QByteArrayLiteral("KDE");
-
-    return QByteArray();
-}
-
-int LXQtWMBackendKWinWaylandLibrary::getBackendScore() const
-{
-    auto *waylandApplication = qGuiApp->nativeInterface<QNativeInterface::QWaylandApplication>();
-    if(!waylandApplication)
-        return 0;
-
-    // Detect KWin Plasma
-    QByteArray desktop = detectDesktopEnvironment();
-    if(desktop == "KDE")
+    if(key == QStringLiteral("kwin_wayland"))
         return 100;
 
-    // It's still somewhat useful for other wayland compositors
-    return 20;
+    return 0;
 }
 
 ILXQtAbstractWMInterface *LXQtWMBackendKWinWaylandLibrary::instance() const

@@ -473,17 +473,22 @@ LXQtTaskbarWlrootsWindow *LXQtTaskbarWlrootsBackend::getWindow(WId windowId) con
 }
 
 
-int LXQtWMBackendWlrootsLibrary::getBackendScore() const
+int LXQtWMBackendWlrootsLibrary::getBackendScore( QString key ) const
 {
-    auto *waylandApplication = qGuiApp->nativeInterface<QNativeInterface::QWaylandApplication>();
-    if(!waylandApplication)
-        return 0;
-
-    // Detect Wlroots based setup. As long as wlroots is supported, we're good to go.
-    // We will not score it high - Dedicated plugins will always be better.
-    QString xdgCurrentDesktop = qEnvironmentVariable("XDG_CURRENT_DESKTOP");
-    if(xdgCurrentDesktop.contains(QStringLiteral("wlroots")))
+    if (key == QStringLiteral("wlroots"))
         return 50;
+
+    else if (key == QStringLiteral("wayfire"))
+        return 30;
+
+    else if (key == QStringLiteral("sway"))
+        return 30;
+
+    else if (key == QStringLiteral("hyprland"))
+        return 30;
+
+    else if (key == QStringLiteral("labwc"))
+        return 30;
 
     // Unsupported
     return 0;
